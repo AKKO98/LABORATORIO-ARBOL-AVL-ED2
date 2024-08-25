@@ -6,15 +6,6 @@ template <class T>
 AVLTreeNode<T>::AVLTreeNode(T value) : value(value), left(nullptr), right(nullptr), count(1), height(1) {}
 
 template <class T>
-AVLTreeNode<T>::AVLTreeNode() : value(NULL) {
-    count = 1;
-    height = 1;
-
-    left = nullptr;
-    right = nullptr;
-}
-
-template <class T>
 void AVLTreeNode<T>::updateValues(){
     count = (left != nullptr ? left->count : 0) + (right != nullptr ? right->count : 0) + 1;
     
@@ -33,7 +24,7 @@ AVLTreeNode<T>* AVLTreeNode<T>::left_rotate(){
     right = right->left;
     R->left = this;
     
-    this->updateValues();  // the order is important
+    this->updateValues();  // EL ORDEN ES IMPORTANTE
     R->updateValues();
     
     return R;
@@ -45,11 +36,14 @@ AVLTreeNode<T>* AVLTreeNode<T>::right_rotate(){
     left = left->right;
     L->right = this;
     
-    this->updateValues();  // the order is important
+    this->updateValues();  // EL ORDEN ES IMPORTANTE WAAaaAAaaaAAaaaAaaAA
     L->updateValues();
     
     return L;
 }
+
+
+
 
 
 // Implementación de la función to_string()
@@ -65,8 +59,17 @@ std::string AVLTreeNode<T>::to_string() const {
     }
 }
 
+
+template<class T>
+bool AVLTreeNode<T>::operator==(const T& other) const
+{
+    return this->value == other;
+}
+
+
 template struct AVLTreeNode<int>;
 template struct AVLTreeNode<short>;
 template struct AVLTreeNode<long>;
 template struct AVLTreeNode<long long>;
 template struct AVLTreeNode<std::string>;
+template struct AVLTreeNode<Pelicula>;

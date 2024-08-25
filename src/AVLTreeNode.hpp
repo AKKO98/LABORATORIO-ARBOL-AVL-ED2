@@ -1,5 +1,6 @@
 #ifndef AVLTreeNode_hpp
 #define AVLTreeNode_hpp
+#include "Pelicula.h"
 
 #include <string>
 #include <algorithm>
@@ -10,12 +11,11 @@ struct AVLTreeNode {
     AVLTreeNode *right;
     
     const T value;
-    int count;  // how many nodes are there in this subtree
+    int count;  // Cuantos nodos hay en total de este sub arbol
     int height;
     
 
     AVLTreeNode(T value);
-    AVLTreeNode();
     void updateValues();
     int balanceFactor();
 
@@ -24,6 +24,7 @@ struct AVLTreeNode {
     AVLTreeNode* right_rotate();
 
     std::string to_string() const;
+    bool operator==(const T& other) const;
 
 };
 

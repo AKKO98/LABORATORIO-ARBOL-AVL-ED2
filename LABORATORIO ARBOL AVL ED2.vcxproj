@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)include;$(ProjectDir)src;$(ProjectDir)include\Graphviz\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)include\Graphviz\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)include;$(ProjectDir)src;$(ProjectDir)include\Graphviz\include;$(ProjectDir)thirdParty\imgui;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)include\Graphviz\lib;$(ProjectDir)lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)include;$(ProjectDir)src;$(ProjectDir)include\Graphviz\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)include\Graphviz\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)include;$(ProjectDir)src;$(ProjectDir)include\Graphviz\include;$(ProjectDir)thirdParty\imgui;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)include\Graphviz\lib;$(ProjectDir)lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -120,7 +120,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>gvc.lib;cgraph.lib;cdt.lib;gvplugin_core.lib;gvplugin_dot_layout.lib;gvplugin_gd.lib;gvplugin_gdiplus.lib;gvplugin_kitty.lib;gvplugin_neato_layout.lib;gvplugin_pango.lib;gvplugin_vt.lib;gvplugin_webp.lib;pathplan.lib;xdot.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gvc.lib;cgraph.lib;opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -139,19 +139,39 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>gvc.lib;cgraph.lib;cdt.lib;gvplugin_core.lib;gvplugin_dot_layout.lib;gvplugin_gd.lib;gvplugin_gdiplus.lib;gvplugin_kitty.lib;gvplugin_neato_layout.lib;gvplugin_pango.lib;gvplugin_vt.lib;gvplugin_webp.lib;pathplan.lib;xdot.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gvc.lib;cgraph.lib;opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Helper.h" />
+    <ClInclude Include="src\Pelicula.h" />
     <ClInclude Include="src\AVLTree.hpp" />
     <ClInclude Include="src\AVLTreeNode.hpp" />
     <ClInclude Include="src\graphics.h" />
+    <ClInclude Include="src\stb_image.h" />
     <ClInclude Include="src\winbgim.h" />
+    <ClInclude Include="thirdParty\imgui\imconfig.h" />
+    <ClInclude Include="thirdParty\imgui\imgui.h" />
+    <ClInclude Include="thirdParty\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="thirdParty\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="thirdParty\imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="thirdParty\imgui\imgui_internal.h" />
+    <ClInclude Include="thirdParty\imgui\imstb_rectpack.h" />
+    <ClInclude Include="thirdParty\imgui\imstb_textedit.h" />
+    <ClInclude Include="thirdParty\imgui\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Pelicula.cpp" />
     <ClCompile Include="src\AVLTree.cpp" />
     <ClCompile Include="src\AVLTreeNode.cpp" />
     <ClCompile Include="src\kod.cpp" />
+    <ClCompile Include="thirdParty\imgui\imgui.cpp" />
+    <ClCompile Include="thirdParty\imgui\imgui_demo.cpp" />
+    <ClCompile Include="thirdParty\imgui\imgui_draw.cpp" />
+    <ClCompile Include="thirdParty\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="thirdParty\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="thirdParty\imgui\imgui_tables.cpp" />
+    <ClCompile Include="thirdParty\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

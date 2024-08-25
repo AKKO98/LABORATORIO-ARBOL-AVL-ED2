@@ -1,12 +1,8 @@
-﻿#include "AVLTreeNode.hpp"
-#include "AVLTree.hpp"
-#include <fstream>
-#include <locale>
-#include <stack>
-#include <queue>
+﻿#include "AVLTree.hpp"
 #define GVDLL
 #include <graphviz/cgraph.h>
 #include <graphviz/gvc.h>
+
 
 template <class T>
 AVLTree<T>::AVLTree(){
@@ -44,14 +40,14 @@ void AVLTree<T>::clear(){
 }
 
 template <class T>
-void AVLTree<T>::insert(T value){
+void AVLTree<T>::insert(T& value){
     if (find(value) != -1)
     {
         return;
     }
 
-    AVLTreeNode<T> **indirect = &root;  // to generalize insertion
-    std::vector<AVLTreeNode<T>**> path;  // to update height values
+    AVLTreeNode<T> **indirect = &root;  // Para generalizar la insercion con el nodo raiz
+    std::vector<AVLTreeNode<T>**> path;  // Para actualizar la altura de los nodos
     
     while (*indirect != nullptr){
         path.push_back(indirect);
@@ -71,8 +67,8 @@ void AVLTree<T>::insert(T value){
 
 template <class T>
 void AVLTree<T>::erase(T value){
-    AVLTreeNode<T> **indirect = &root;  // to generalize insertion
-    std::vector<AVLTreeNode<T>**> path;  // to update height values
+    AVLTreeNode<T> **indirect = &root;  // Para generalizar la insercion con el nodo raiz
+    std::vector<AVLTreeNode<T>**> path;  // Para actualizar la altura de los nodos
     
     while (*indirect != nullptr and (*indirect)->value != value){
         path.push_back(indirect);
@@ -83,21 +79,22 @@ void AVLTree<T>::erase(T value){
             indirect = &((*indirect)->right);
     }
     
-    if (*indirect == nullptr)  // the value does not exist in tree
-        return;  // may be raising an Exception is more elegant
-    
+    if (*indirect == nullptr) {  // El valor no existe en el sub arbol
+        std::cout << "El nodo que trata de eliminar no existe" << std::endl;
+        return;
+    }
     else
         path.push_back(indirect);
     
     std::size_t index = path.size();
     
-    if ((*indirect)->left == nullptr and (*indirect)->right == nullptr){  // the node is leaf
-        delete *indirect;  // just delete node
+    if ((*indirect)->left == nullptr and (*indirect)->right == nullptr){  // El nodo es una hoja
+        delete *indirect;  // Solo lo borra
         *indirect = nullptr;
-        path.pop_back();  // pop the deleted node from path
+        path.pop_back();  // pop al nodo borrado del Path
     }
     
-    else if ((*indirect)->right == nullptr){  // only left child exists
+    else if ((*indirect)->right == nullptr){  // Solo existe el hijo izquierdo del nodo
         AVLTreeNode<T> *toRemove = *indirect;
         
         (*indirect) = (*indirect)->left;
@@ -106,7 +103,7 @@ void AVLTree<T>::erase(T value){
         path.pop_back();
     }
     
-    else{  // right child exists
+    else{  // Existe el hijo derecho del nodo
         AVLTreeNode<T> **successor = &((*indirect)->right);
         
         while ((*successor)->left != nullptr){
@@ -140,29 +137,36 @@ void AVLTree<T>::erase(T value){
 }
 
 template <class T>
-void AVLTree<T>::balance(std::vector<AVLTreeNode<T> **> path){  // starting from root
+void AVLTree<T>::balance(std::vector<AVLTreeNode<T> **> path){  // Comenzando por la raiz
     std::reverse(path.begin(), path.end());
     
     for (auto indirect: path){
         (*indirect)->updateValues();
         
+        //rotación simple a la derecha
         if ((*indirect)->balanceFactor() >= 2 and (*indirect)->left->balanceFactor() >= 0)   // left - left
             *indirect = (*indirect)->right_rotate();
         
+        //rotación doble a la derecha
         else if ((*indirect)->balanceFactor() >= 2){  // left - right
             (*indirect)->left = (*indirect)->left->left_rotate();
             *indirect = (*indirect)->right_rotate();
         }
-        
+
+        //rotación simple a la izquierda
         else if ((*indirect)->balanceFactor() <= -2 and (*indirect)->right->balanceFactor() <= 0)  // right - right
             *indirect = (*indirect)->left_rotate();
         
+
+        //rotación doble a la izquierda
         else if ((*indirect)->balanceFactor() <= -2){  // right - left
             (*indirect)->right = ((*indirect)->right)->right_rotate();
             *indirect = (*indirect)->left_rotate();
         }
     }
 }
+
+
 
 template <class T>
 bool AVLTree<T>::empty() const{
@@ -195,6 +199,7 @@ int AVLTree<T>::find(T value) const{
         return idx + (direct->left ? direct->left->count : 0);
 }
 
+// encuentra el primer elemento que es mayor que value
 template <class T>
 int AVLTree<T>::upper_bound(T value) const{
     AVLTreeNode<T> *direct = root;
@@ -212,6 +217,7 @@ int AVLTree<T>::upper_bound(T value) const{
     return idx;
 }
 
+// encuentra el primer elemento que es mayor que value
 template <class T>
 int AVLTree<T>::lower_bound(T value) const{
     AVLTreeNode<T> *direct = root;
@@ -229,6 +235,7 @@ int AVLTree<T>::lower_bound(T value) const{
     return idx;
 }
 
+// encuentra y devuelve el valor mínimo en el árbol
 template <class T>
 const T& AVLTree<T>::find_min() const{
     AVLTreeNode<T> *cur = root;
@@ -239,6 +246,7 @@ const T& AVLTree<T>::find_min() const{
     return cur->value;
 }
 
+// encuentra y devuelve el valor maximo en el árbol.
 template <class T>
 const T& AVLTree<T>::find_max() const{
     AVLTreeNode<T> *cur = root;
@@ -250,60 +258,37 @@ const T& AVLTree<T>::find_max() const{
 }
 
 template <class T>
-const T& AVLTree<T>::operator[](std::size_t idx) const{
-    AVLTreeNode<T> *cur = root;
+AVLTreeNode<T>* AVLTree<T>::operator[](std::size_t idx) {
+    AVLTreeNode<T>* cur = root;
     int left = cur->left != nullptr ? cur->left->count : 0;
-    
-    while (left != idx){
-        if (left < idx){
+
+    while (left != idx) {
+        if (left < idx) {
             idx -= left + 1;
-            
+
             cur = cur->right;
             left = cur->left != nullptr ? cur->left->count : 0;
         }
-        
-        else{
+
+        else {
             cur = cur->left;
             left = cur->left != nullptr ? cur->left->count : 0;
         }
     }
-    
-    return cur->value;
+
+    return cur;
 }
 
 
-
 template <class T>
-void AVLTree<T>::display(const std::string& prefix, const AVLTreeNode<T>* node, bool isLeft, std::ofstream& file) {
-    if (node != nullptr) {
-        // Imprimir el prefijo actual
-        file << prefix;
-
-        // Imprimir el borde izquierdo o derecho del nodo actual
-        file << (isLeft ? "+-- " : "+-- ");
-
-        // Imprimir el valor del nodo
-        file << node->value << std::endl;
-
-        // Entrar al siguiente nivel del árbol - ramas izquierda y derecha
-        display(prefix + (isLeft ? "|   " : "    "), node->left, true, file);
-        display(prefix + (isLeft ? "|   " : "    "), node->right, false, file);
-    }
-}
-
-template <class T>
-void AVLTree<T>::display() {
-    std::ofstream file("arbol.txt");
-    if (file.is_open()) {
-        display("", root, false, file);
-    }
-    file.close();
-}
-
-template <class T>
-void AVLTree<T>::graph_bfs(const std::string& filename) {
+void AVLTree<T>::display(const std::string& filename) {
     // Obtener el vector BFS del árbol
     std::vector<AVLTreeNode<T>*> bfs_seq = bfs();
+
+    if (bfs_seq.empty()) {
+        std::cout << "El árbol está vacío." << std::endl;
+        return;
+    }
 
     // Crear un contexto de Graphviz
     GVC_t* gvc = gvContext();
@@ -311,35 +296,24 @@ void AVLTree<T>::graph_bfs(const std::string& filename) {
     // Crear un grafo dirigido
     Agraph_t* g = agopen(_strdup("AVLTree"), Agdirected, nullptr);
 
-    // Crear nodos en el grafo
-    std::vector<Agnode_t*> nodes;
-    for (AVLTreeNode<T>* value : bfs_seq)
-    {
-        std::string label = value->to_string();
-        nodes.push_back(agnode(g, _strdup(label.c_str()), 1));
+    // Crear nodos en el grafo para cada nodo en el BFS
+    std::map<AVLTreeNode<T>*, Agnode_t*> node_map;
+    for (AVLTreeNode<T>* node : bfs_seq) {
+        std::string label = node->to_string();
+        node_map[node] = agnode(g, _strdup(label.c_str()), 1);
     }
 
-    //for (size_t i = 0; i < bfs_seq.size(); ++i) {
-    //    // Crear un nodo con el valor en bfs_seq[i]
-    //    std::string label = bfs_seq[i].;
-    //    nodes.push_back(agnode(g, _strdup(label.c_str()), 1));
-    //}
-
-    // Crear aristas (edges) en el grafo
-    for (size_t i = 0; i < bfs_seq.size(); ++i) {
-        size_t left_index = 2 * i + 1;
-        size_t right_index = 2 * i + 2;
-
-        if (left_index < bfs_seq.size()) {
-            agedge(g, nodes[i], nodes[left_index], nullptr, 1);
+    // Crear aristas en el grafo para representar las conexiones entre los nodos
+    for (AVLTreeNode<T>* node : bfs_seq) {
+        if (node->left != nullptr) {
+            agedge(g, node_map[node], node_map[node->left], nullptr, 1);
         }
-
-        if (right_index < bfs_seq.size()) {
-            agedge(g, nodes[i], nodes[right_index], nullptr, 1);
+        if (node->right != nullptr) {
+            agedge(g, node_map[node], node_map[node->right], nullptr, 1);
         }
     }
 
-    // Layout y renderizado del grafo
+    // Realizar el layout y renderizar el grafo en formato PNG
     gvLayout(gvc, g, "dot");
     gvRenderFilename(gvc, g, "png", filename.c_str());
 
@@ -348,6 +322,28 @@ void AVLTree<T>::graph_bfs(const std::string& filename) {
     agclose(g);
     gvFreeContext(gvc);
 }
+
+template <class T>
+int AVLTree<T>::getLevel(AVLTreeNode<T>* node) {
+    int level = 0;
+    AVLTreeNode<T>* current = root;
+
+    while (current != nullptr) {
+        if (node->value < current->value) {
+            current = current->left;
+        }
+        else if (node->value > current->value) {
+            current = current->right;
+        }
+        else {
+            return level;
+        }
+        level++;
+    }
+
+    return -1; // Nodo no encontrado en el árbol
+}
+
 
 template <class T>
 std::vector<AVLTreeNode<T>*> AVLTree<T>::bfs() const {
@@ -377,8 +373,10 @@ std::vector<AVLTreeNode<T>*> AVLTree<T>::bfs() const {
     return result;
 }
 
-template class AVLTree<int>;
+
+
 template class AVLTree<short>;
 template class AVLTree<long>;
 template class AVLTree<long long>;
 template class AVLTree<std::string>;
+template class AVLTree<Pelicula>;
