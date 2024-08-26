@@ -63,6 +63,18 @@
     <ClInclude Include="src\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\GLFW\glfw3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GLFW\glfw3native.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Graphviz\include\graphviz\cgraph.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Graphviz\include\graphviz\gvc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\AVLTree.cpp">
@@ -98,5 +110,10 @@
     <ClCompile Include="thirdParty\imgui\imgui_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="include\Graphviz\lib\gvc.lib" />
+    <Library Include="include\Graphviz\lib\cgraph.lib" />
+    <Library Include="lib\glfw3.lib" />
   </ItemGroup>
 </Project>

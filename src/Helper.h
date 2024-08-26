@@ -9,7 +9,7 @@
 
 struct Helper
 {
-    static std::unique_ptr<Pelicula> buscarPeliculaPorTitulo(const std::string& path, const std::string& tituloBuscado) {
+    static std::unique_ptr<Pelicula> buscarPeliculaPorTitulo( const std::string& path, const std::string& tituloBuscado) {
         std::ifstream archivo(path);
 
         if (!archivo.is_open()) {
@@ -150,9 +150,9 @@ struct Helper
     }
 
     // Función para buscar y almacenar los nodos que cumplen con los criterios
-    static std::vector<Pelicula> searchWithCriteria(AVLTree<Pelicula>& arbol, int year, double foreign_percent, double foreign_earnings) {
+    static std::vector<Pelicula> searchWithCriteria(AVLTree<Pelicula>& arbol, int year, double foreign_earnings) {
         std::vector<Pelicula> result;
-        searchWithCriteria(arbol.getRoot(), year, foreign_percent, foreign_earnings, result);
+        searchWithCriteria(arbol.getRoot(), year, foreign_earnings, result);
         return result;
     }
 
@@ -177,9 +177,10 @@ struct Helper
     }
 
 
+
 private:
 
-    static void searchWithCriteria(AVLTreeNode<Pelicula>* node, int year, double foreign_percent, double foreign_earnings, std::vector<Pelicula>& result) {
+    static void searchWithCriteria(AVLTreeNode<Pelicula>* node, int year, double foreign_earnings, std::vector<Pelicula>& result) {
         if (node == nullptr) {
             return;
         }
@@ -192,9 +193,11 @@ private:
         }
 
         // Buscar en el subárbol izquierdo y derecho
-        searchWithCriteria(node->left, year, foreign_percent, foreign_earnings, result);
-        searchWithCriteria(node->right, year, foreign_percent, foreign_earnings, result);
+        searchWithCriteria(node->left, year, foreign_earnings, result);
+        searchWithCriteria(node->right, year, foreign_earnings, result);
     }
+
+
 
 
 };

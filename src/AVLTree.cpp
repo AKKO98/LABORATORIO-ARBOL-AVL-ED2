@@ -1,7 +1,7 @@
 ﻿#include "AVLTree.hpp"
 #define GVDLL
-#include <graphviz/cgraph.h>
-#include <graphviz/gvc.h>
+#include "graphviz/cgraph.h"
+#include "graphviz/gvc.h"
 
 
 template <class T>
@@ -345,6 +345,7 @@ int AVLTree<T>::getLevel(AVLTreeNode<T>* node) {
 }
 
 
+// Reccorido por anchura
 template <class T>
 std::vector<AVLTreeNode<T>*> AVLTree<T>::bfs() const {
     std::vector<AVLTreeNode<T>*> result;

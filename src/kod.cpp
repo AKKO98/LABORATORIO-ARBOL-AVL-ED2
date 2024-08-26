@@ -1,4 +1,5 @@
 #include <iostream>
+#include <windows.h>
 #include "AVLTree.hpp"
 #include "Pelicula.h"
 #include "Helper.h"
@@ -37,7 +38,7 @@ GLuint LoadTextureFromFile(const char* filename)
 
     stbi_image_free(data);  // Liberar los datos de imagen después de cargar la textura
 
-    return textureID;  // Devuelve el GLuint, no un puntero
+    return textureID;  // Devuelve el GLuint
 }
 
 void paletaDeColores() {
@@ -136,6 +137,18 @@ void Render(bool& imagen, bool& imagenCambiada)
     ImGui::End();
 }
 
+void prueba(AVLTree<Pelicula>& p) {
+    std::vector<std::string> ns = { "Mission to Mars",  "Final Destination", "The Family Man", "Space Cowboys", "Remember the Titans", "Big Momma's House",
+                                    "The Emperor's New Groove", "Autumn in New York", "Bring It On"
+                                    };
+    for (auto n : ns)
+    {
+        p.insert(*Helper::buscarPeliculaPorTitulo("dataset_movies.csv", n));
+        
+    }
+    p.display("Arbol.png");
+}
+
 static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
@@ -199,27 +212,7 @@ int main(int, char**)
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-#ifdef __EMSCRIPTEN__
-    ImGui_ImplGlfw_InstallEmscriptenCallbacks(window, "#canvas");
-#endif
     ImGui_ImplOpenGL3_Init(glsl_version);
-
-    // Load Fonts
-    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-    // - If the file cannot be loaded, the function will return a nullptr. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-    // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-    // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
-    // - Read 'docs/FONTS.md' for more instructions and details.
-    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-    // - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
-    //io.Fonts->AddFontDefault();
-    //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-    //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
-    //IM_ASSERT(font != nullptr);
 
     // Our state
     bool menu = true;
@@ -231,8 +224,7 @@ int main(int, char**)
     AVLTree<Pelicula> tree;
     std::string path = "dataset_movies.csv"; 
     std::vector<Pelicula> table;
-    static char texto[128];
-    std::string console;
+    static std::string console;
 
 
 
@@ -240,11 +232,6 @@ int main(int, char**)
     while (!glfwWindowShouldClose(window))
 
     {
-        // Poll and handle events (inputs, window resize, etc.)
-        // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-        // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
-        // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
-        // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         glfwPollEvents();
         if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
         {
@@ -258,7 +245,7 @@ int main(int, char**)
         ImGui::NewFrame();
 
 
-        
+        //prueba(tree);
         
         ImGui::Begin("Menu", &menu);
         ImGui::Text("Add, Search or Delete a Node");
@@ -269,7 +256,7 @@ int main(int, char**)
             auto nodo = Helper::buscarPeliculaPorTitulo(path, addTitle);
             if (nodo != nullptr)
             {
-                tree.insert(*nodo.get());
+                tree.insert(*nodo.get());   
                 tree.display("Arbol.png");
                 change = true;
             }
@@ -322,6 +309,20 @@ int main(int, char**)
         }
 
         ImGui::SameLine();
+        if (ImGui::Button("BFS"))
+        {
+            auto l = tree.bfs();
+            for (size_t i = 0; i < l.size(); i++)
+            {
+                console = console + l[i]->value.getTitle();
+                if (i != l.size() - 1)
+                {
+                    console = console + " - ";
+                }
+            }
+        }
+
+        ImGui::SameLine();
         if (ImGui::Button(" Nivel de un nodo "))
         {
             auto nivel = Helper::getLevelByName(tree, addTitle);
@@ -331,23 +332,21 @@ int main(int, char**)
             }
         }
 
-
         for (size_t i = 0; i < 15; i++)
             ImGui::Spacing();
 
-        static char year[256], FE[256], FPE[256]; 
+        static char year[256], FE[256]; 
         // Crear campos de entrada de texto para el usuario
         ImGui::InputText(" <-- Year", year, IM_ARRAYSIZE(year));
-        ImGui::InputText(" <-- Foreing Earning", FPE, IM_ARRAYSIZE(FPE));
-        ImGui::InputText(" <-- Foreing Percent", FE, IM_ARRAYSIZE(FE));
+        ImGui::InputText(" <-- Foreing Earning", FE, IM_ARRAYSIZE(FE));
 
-        for (size_t i = 0; i < 10; i++)
+        for (size_t i = 0; i < 5; i++)
             ImGui::Spacing();
 
         if (ImGui::Button(" Busqueda por atributos "))
         {
             table.clear();
-            table = Helper::searchWithCriteria(tree, std::stoi(year), std::stod(FE), std::stod(FPE));
+            table = Helper::searchWithCriteria(tree, std::stoi(year), std::stod(FE));
         }
 
         for (size_t i = 0; i < 25; i++)
@@ -389,17 +388,17 @@ int main(int, char**)
 
 
         // Cambia el texto programáticamente cuando sea necesario
-        strcpy_s(texto, console.c_str());
+        const size_t size = console.size() + 1;
+        char* copia = new char[strlen(console.c_str()) + 1];
+        strcpy_s(copia, console.size() + 1, console.c_str());
 
         // Mostrar la caja de texto de solo lectura
-        ImGui::InputTextMultiline(" ", texto, IM_ARRAYSIZE(texto), {ImGui::GetWindowWidth() * .98f, ImGui::GetWindowHeight() * .85f});
-
+        ImGui::InputTextMultiline(" ", copia, IM_ARRAYSIZE(copia), {ImGui::GetWindowWidth() * .98f, ImGui::GetWindowHeight() * .85f});
         ImGui::End();
 
 
         // Rendering
         ImGui::Render();
-
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
@@ -414,9 +413,6 @@ int main(int, char**)
             ImGui::RenderPlatformWindowsDefault();
             glfwMakeContextCurrent(backup_current_context);
         }
-        
-
-
 
         glfwSwapBuffers(window);
     }
@@ -436,3 +432,278 @@ int main(int, char**)
     return 0;
 }
 
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+    glfwSetErrorCallback(glfw_error_callback);
+    if (!glfwInit())
+        return 1;
+
+    // Decide GL+GLSL versions
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+    // GL ES 2.0 + GLSL 100
+    const char* glsl_version = "#version 100";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+#elif defined(__APPLE__)
+    // GL 3.2 + GLSL 150
+    const char* glsl_version = "#version 150";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+#else
+    // GL 3.0 + GLSL 130
+    const char* glsl_version = "#version 130";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+#endif
+
+    // Create window with graphics context
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "Laboratorio ED2 AVL TREE", nullptr, nullptr);
+    if (window == nullptr)
+        return 1;
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1); // Enable vsync
+
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+    //io.ConfigViewportsNoAutoMerge = true;
+    //io.ConfigViewportsNoTaskBarIcon = true;
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsLight();
+
+    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+    paletaDeColores();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
+    // Our state
+    bool menu = true;
+    bool imagen = true;
+    bool change = true;
+    bool background = true;
+
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    AVLTree<Pelicula> tree;
+    std::string path = "dataset_movies.csv";
+    std::vector<Pelicula> table;
+    static std::string console;
+
+
+
+    // Main loop
+    while (!glfwWindowShouldClose(window))
+
+    {
+        glfwPollEvents();
+        if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
+        {
+            //ImGui_ImplGlfw_Sleep(1);
+            //continue;
+        }
+
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+
+        //prueba(tree);
+
+        ImGui::Begin("Menu", &menu);
+        ImGui::Text("Add, Search or Delete a Node");
+        static char addTitle[34] = ""; ImGui::InputText(" ", addTitle, IM_ARRAYSIZE(addTitle));
+
+        if (ImGui::Button(" Add "))
+        {
+            auto nodo = Helper::buscarPeliculaPorTitulo(path, addTitle);
+            if (nodo != nullptr)
+            {
+                tree.insert(*nodo.get());
+                tree.display("Arbol.png");
+                change = true;
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button(" Delete "))
+        {
+            auto nodo = Helper::buscarPeliculaPorTitulo(path, addTitle);
+            if (nodo != nullptr)
+            {
+                tree.erase(*nodo.get());
+                tree.display("Arbol.png");
+                change = true;
+            }
+        }
+
+
+        ImGui::SameLine();
+        if (ImGui::Button(" Buscar padre del nodo "))
+        {
+            table.clear();
+            auto nodo = Helper::findParentByTitle(tree, addTitle);
+            if (nodo != nullptr)
+            {
+                table.push_back(nodo->value);
+            }
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button(" Buscar abuelo del nodo "))
+        {
+            table.clear();
+            auto nodo = Helper::findGrandParentByTitle(tree, addTitle);
+            if (nodo != nullptr)
+            {
+                table.push_back(nodo->value);
+            }
+        }
+
+
+        ImGui::SameLine();
+        if (ImGui::Button(" Buscar tio del nodo "))
+        {
+            table.clear();
+            auto nodo = Helper::findUncleByTitle(tree, addTitle);
+            if (nodo != nullptr)
+            {
+                table.push_back(nodo->value);
+            }
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("BFS"))
+        {
+            auto l = tree.bfs();
+            for (size_t i = 0; i < l.size(); i++)
+            {
+                console = console + l[i]->value.getTitle();
+                if (i != l.size() - 1)
+                {
+                    console = console + " - ";
+                }
+            }
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button(" Nivel de un nodo "))
+        {
+            auto nivel = Helper::getLevelByName(tree, addTitle);
+            if (nivel != -1)
+            {
+                console = "El nivel del nodo es : " + std::to_string(nivel);
+            }
+        }
+
+        for (size_t i = 0; i < 15; i++)
+            ImGui::Spacing();
+
+        static char year[256], FE[256];
+        // Crear campos de entrada de texto para el usuario
+        ImGui::InputText(" <-- Year", year, IM_ARRAYSIZE(year));
+        ImGui::InputText(" <-- Foreing Earning", FE, IM_ARRAYSIZE(FE));
+
+        for (size_t i = 0; i < 5; i++)
+            ImGui::Spacing();
+
+        if (ImGui::Button(" Busqueda por atributos "))
+        {
+            table.clear();
+            table = Helper::searchWithCriteria(tree, std::stoi(year), std::stod(FE));
+        }
+
+        for (size_t i = 0; i < 25; i++)
+            ImGui::Spacing();
+
+
+        // Tabla
+        ImGui::BeginTable("Datos: ", 7, ImGuiTableFlags_BordersH | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInner);
+        ImGui::TableNextColumn(); ImGui::Text("Year");
+        ImGui::TableNextColumn(); ImGui::Text("Title");
+        ImGui::TableNextColumn(); ImGui::Text("Foreign Earnings");
+        ImGui::TableNextColumn(); ImGui::Text("Domestic Earnings");
+        ImGui::TableNextColumn(); ImGui::Text("Worldwide Earnings");
+        ImGui::TableNextColumn(); ImGui::Text("Foreign Percent Earnings");
+        ImGui::TableNextColumn(); ImGui::Text("Domestic Percent Earnings");
+
+        if (!table.empty())
+        {
+            for (auto t : table)
+            {
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn(); ImGui::Text(std::to_string(t.getYear()).c_str());
+                ImGui::TableNextColumn(); ImGui::Text(t.getTitle().c_str());
+                ImGui::TableNextColumn(); ImGui::Text(std::to_string(t.getFE()).c_str());
+                ImGui::TableNextColumn(); ImGui::Text(std::to_string(t.getDE()).c_str());
+                ImGui::TableNextColumn(); ImGui::Text(std::to_string(t.getWWE()).c_str());
+                ImGui::TableNextColumn(); ImGui::Text(std::to_string(t.getFPE()).c_str());
+                ImGui::TableNextColumn(); ImGui::Text(std::to_string(t.getDPE()).c_str());
+            }
+        }
+        ImGui::EndTable(); //Final de la tabla
+
+        ImGui::End();
+
+        Render(imagen, change);
+
+        ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+
+
+
+        // Cambia el texto programáticamente cuando sea necesario
+        const size_t size = console.size() + 1;
+        char* copia = new char[strlen(console.c_str()) + 1];
+        strcpy_s(copia, console.size() + 1, console.c_str());
+
+        // Mostrar la caja de texto de solo lectura
+        ImGui::InputTextMultiline(" ", copia, IM_ARRAYSIZE(copia), { ImGui::GetWindowWidth() * .98f, ImGui::GetWindowHeight() * .85f });
+        ImGui::End();
+
+
+        // Rendering
+        ImGui::Render();
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            GLFWwindow* backup_current_context = glfwGetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(backup_current_context);
+        }
+
+        glfwSwapBuffers(window);
+    }
+
+#ifdef __EMSCRIPTEN__
+    EMSCRIPTEN_MAINLOOP_END;
+#endif
+
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
+
+    return 0;
+}
