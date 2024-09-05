@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34622.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LABORATORIO ARBOL AVL ED2", "LABORATORIO ARBOL AVL ED2.vcxproj", "{258F8C39-B81D-456F-BBA4-36384108CE17}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Installer", "..\Installer\Installer.vdproj", "{88C681BF-9ADC-48CC-ABDE-E3CB9550B842}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,10 @@ Global
 		{258F8C39-B81D-456F-BBA4-36384108CE17}.Release|x64.Build.0 = Release|x64
 		{258F8C39-B81D-456F-BBA4-36384108CE17}.Release|x86.ActiveCfg = Release|Win32
 		{258F8C39-B81D-456F-BBA4-36384108CE17}.Release|x86.Build.0 = Release|Win32
+		{88C681BF-9ADC-48CC-ABDE-E3CB9550B842}.Debug|x64.ActiveCfg = Debug
+		{88C681BF-9ADC-48CC-ABDE-E3CB9550B842}.Debug|x86.ActiveCfg = Debug
+		{88C681BF-9ADC-48CC-ABDE-E3CB9550B842}.Release|x64.ActiveCfg = Release
+		{88C681BF-9ADC-48CC-ABDE-E3CB9550B842}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

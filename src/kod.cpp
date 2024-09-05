@@ -1,5 +1,6 @@
 #include <iostream>
 #include <windows.h>
+#include <filesystem>
 #include "AVLTree.hpp"
 #include "Pelicula.h"
 #include "Helper.h"
@@ -117,13 +118,12 @@ void UpdateTexture(const char* filename)
     arbol = LoadTextureFromFile(filename);
 }
 
-void Render(bool& imagen, bool& imagenCambiada)
+void Render(bool& imagen, bool& imagenCambiada, std::string& path)
 {
     ImGui::Begin("Imagen", &imagen);
 
-    // Supongamos que se cambió la imagen y necesitas actualizar la textura
     if (imagenCambiada) {
-        UpdateTexture("Arbol.png");
+        UpdateTexture(path.c_str());
         imagenCambiada = false;  // Resetear el flag después de actualizar
     }
 
@@ -154,10 +154,7 @@ static void glfw_error_callback(int error, const char* description)
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
 
-// Main code
-int main(int, char**)
-{
-
+int principal() {
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
@@ -222,7 +219,9 @@ int main(int, char**)
 
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     AVLTree<Pelicula> tree;
-    std::string path = "dataset_movies.csv"; 
+    std::filesystem::path directorioEjecutable = std::filesystem::current_path();
+    std::string path = directorioEjecutable.string().append("\\dataset_movies.csv");
+    std::string imagenPaht = directorioEjecutable.string().append("\\Arbol.png");
     std::vector<Pelicula> table;
     static std::string console;
 
@@ -235,284 +234,8 @@ int main(int, char**)
         glfwPollEvents();
         if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
         {
-           //ImGui_ImplGlfw_Sleep(1);
-           //continue;
-        }
-
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-
-        //prueba(tree);
-        
-        ImGui::Begin("Menu", &menu);
-        ImGui::Text("Add, Search or Delete a Node");
-        static char addTitle[34] = ""; ImGui::InputText(" ", addTitle, IM_ARRAYSIZE(addTitle));
-
-        if (ImGui::Button(" Add "))
-        {
-            auto nodo = Helper::buscarPeliculaPorTitulo(path, addTitle);
-            if (nodo != nullptr)
-            {
-                tree.insert(*nodo.get());   
-                tree.display("Arbol.png");
-                change = true;
-            }
-        }
-        ImGui::SameLine();
-        if (ImGui::Button(" Delete ")) 
-        {
-            auto nodo = Helper::buscarPeliculaPorTitulo(path, addTitle);
-            if (nodo != nullptr)
-            {
-                tree.erase(*nodo.get());
-                tree.display("Arbol.png");
-                change = true;
-            }
-        }
-
-
-        ImGui::SameLine();
-        if (ImGui::Button(" Buscar padre del nodo "))
-        {
-            table.clear();
-            auto nodo = Helper::findParentByTitle(tree, addTitle);
-            if (nodo != nullptr)
-            {
-                table.push_back(nodo->value);
-            }
-        }
-
-        ImGui::SameLine();
-        if (ImGui::Button(" Buscar abuelo del nodo "))
-        {
-            table.clear();
-            auto nodo = Helper::findGrandParentByTitle(tree, addTitle);
-            if (nodo != nullptr)
-            {
-                table.push_back(nodo->value);
-            }
-        }
-
-
-        ImGui::SameLine();
-        if (ImGui::Button(" Buscar tio del nodo "))
-        {
-            table.clear();
-            auto nodo = Helper::findUncleByTitle(tree, addTitle);
-            if (nodo != nullptr)
-            {
-                table.push_back(nodo->value);
-            }
-        }
-
-        ImGui::SameLine();
-        if (ImGui::Button("BFS"))
-        {
-            auto l = tree.bfs();
-            for (size_t i = 0; i < l.size(); i++)
-            {
-                console = console + l[i]->value.getTitle();
-                if (i != l.size() - 1)
-                {
-                    console = console + " - ";
-                }
-            }
-        }
-
-        ImGui::SameLine();
-        if (ImGui::Button(" Nivel de un nodo "))
-        {
-            auto nivel = Helper::getLevelByName(tree, addTitle);
-            if (nivel != -1)
-            {
-                console = "El nivel del nodo es : " + std::to_string(nivel);
-            }
-        }
-
-        for (size_t i = 0; i < 15; i++)
-            ImGui::Spacing();
-
-        static char year[256], FE[256]; 
-        // Crear campos de entrada de texto para el usuario
-        ImGui::InputText(" <-- Year", year, IM_ARRAYSIZE(year));
-        ImGui::InputText(" <-- Foreing Earning", FE, IM_ARRAYSIZE(FE));
-
-        for (size_t i = 0; i < 5; i++)
-            ImGui::Spacing();
-
-        if (ImGui::Button(" Busqueda por atributos "))
-        {
-            table.clear();
-            table = Helper::searchWithCriteria(tree, std::stoi(year), std::stod(FE));
-        }
-
-        for (size_t i = 0; i < 25; i++)
-            ImGui::Spacing();
-
-
-        // Tabla
-        ImGui::BeginTable("Datos: ", 7, ImGuiTableFlags_BordersH | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInner);
-            ImGui::TableNextColumn(); ImGui::Text("Year");
-            ImGui::TableNextColumn(); ImGui::Text("Title");
-            ImGui::TableNextColumn(); ImGui::Text("Foreign Earnings");
-            ImGui::TableNextColumn(); ImGui::Text("Domestic Earnings");
-            ImGui::TableNextColumn(); ImGui::Text("Worldwide Earnings");
-            ImGui::TableNextColumn(); ImGui::Text("Foreign Percent Earnings");
-            ImGui::TableNextColumn(); ImGui::Text("Domestic Percent Earnings");
-
-            if (!table.empty())
-            {
-                for (auto t : table)
-                {
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn(); ImGui::Text(std::to_string(t.getYear()).c_str());
-                    ImGui::TableNextColumn(); ImGui::Text(t.getTitle().c_str());
-                    ImGui::TableNextColumn(); ImGui::Text(std::to_string(t.getFE()).c_str());
-                    ImGui::TableNextColumn(); ImGui::Text(std::to_string(t.getDE()).c_str());
-                    ImGui::TableNextColumn(); ImGui::Text(std::to_string(t.getWWE()).c_str());
-                    ImGui::TableNextColumn(); ImGui::Text(std::to_string(t.getFPE()).c_str());
-                    ImGui::TableNextColumn(); ImGui::Text(std::to_string(t.getDPE()).c_str());
-                }
-            }
-        ImGui::EndTable(); //Final de la tabla
-        
-        ImGui::End();
-
-        Render(imagen, change);
-
-        ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-
-
-
-        // Cambia el texto programáticamente cuando sea necesario
-        const size_t size = console.size() + 1;
-        char* copia = new char[strlen(console.c_str()) + 1];
-        strcpy_s(copia, console.size() + 1, console.c_str());
-
-        // Mostrar la caja de texto de solo lectura
-        ImGui::InputTextMultiline(" ", copia, IM_ARRAYSIZE(copia), {ImGui::GetWindowWidth() * .98f, ImGui::GetWindowHeight() * .85f});
-        ImGui::End();
-
-
-        // Rendering
-        ImGui::Render();
-        int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            GLFWwindow* backup_current_context = glfwGetCurrentContext();
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            glfwMakeContextCurrent(backup_current_context);
-        }
-
-        glfwSwapBuffers(window);
-    }
-
-#ifdef __EMSCRIPTEN__
-    EMSCRIPTEN_MAINLOOP_END;
-#endif
-
-    // Cleanup
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-
-    glfwDestroyWindow(window);
-    glfwTerminate();
-
-    return 0;
-}
-
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
-{
-    glfwSetErrorCallback(glfw_error_callback);
-    if (!glfwInit())
-        return 1;
-
-    // Decide GL+GLSL versions
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-    // GL ES 2.0 + GLSL 100
-    const char* glsl_version = "#version 100";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-#elif defined(__APPLE__)
-    // GL 3.2 + GLSL 150
-    const char* glsl_version = "#version 150";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
-#else
-    // GL 3.0 + GLSL 130
-    const char* glsl_version = "#version 130";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
-#endif
-
-    // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Laboratorio ED2 AVL TREE", nullptr, nullptr);
-    if (window == nullptr)
-        return 1;
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // Enable vsync
-
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
-    //io.ConfigViewportsNoAutoMerge = true;
-    //io.ConfigViewportsNoTaskBarIcon = true;
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsLight();
-
-    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-    paletaDeColores();
-
-    // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
-
-    // Our state
-    bool menu = true;
-    bool imagen = true;
-    bool change = true;
-    bool background = true;
-
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    AVLTree<Pelicula> tree;
-    std::string path = "dataset_movies.csv";
-    std::vector<Pelicula> table;
-    static std::string console;
-
-
-
-    // Main loop
-    while (!glfwWindowShouldClose(window))
-
-    {
-        glfwPollEvents();
-        if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
-        {
-            //ImGui_ImplGlfw_Sleep(1);
-            //continue;
+            ImGui_ImplGlfw_Sleep(10);
+            continue;
         }
 
         // Start the Dear ImGui frame
@@ -529,23 +252,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         if (ImGui::Button(" Add "))
         {
-            auto nodo = Helper::buscarPeliculaPorTitulo(path, addTitle);
+            std::unique_ptr<Pelicula> nodo = Helper::buscarPeliculaPorTitulo(path, addTitle);
             if (nodo != nullptr)
             {
                 tree.insert(*nodo.get());
-                tree.display("Arbol.png");
+                tree.display(imagenPaht);
                 change = true;
             }
         }
         ImGui::SameLine();
         if (ImGui::Button(" Delete "))
         {
-            auto nodo = Helper::buscarPeliculaPorTitulo(path, addTitle);
+            std::unique_ptr<Pelicula> nodo = Helper::buscarPeliculaPorTitulo(path, addTitle);
             if (nodo != nullptr)
             {
                 tree.erase(*nodo.get());
-                tree.display("Arbol.png");
+                tree.display(imagenPaht);
                 change = true;
+                console = "Nodo eliminado con exito.";
             }
         }
 
@@ -559,6 +283,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             {
                 table.push_back(nodo->value);
             }
+            else
+            {
+                console = "El nodo no se encuentra en el arbol o no tiene padre (es la raiz).";
+            }
         }
 
         ImGui::SameLine();
@@ -570,10 +298,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             {
                 table.push_back(nodo->value);
             }
+            else
+            {
+                console = "El nodo no se encuentra en el arbol o no tiene abuelo (Es hijo de la raiz).";
+            }
         }
 
 
-        ImGui::SameLine();
         if (ImGui::Button(" Buscar tio del nodo "))
         {
             table.clear();
@@ -582,11 +313,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             {
                 table.push_back(nodo->value);
             }
+            else
+            {
+                console = "El nodo no se encuentra en el arbol o no tiene tio.";
+            }
         }
 
         ImGui::SameLine();
         if (ImGui::Button("BFS"))
         {
+            console = "";
             auto l = tree.bfs();
             for (size_t i = 0; i < l.size(); i++)
             {
@@ -601,10 +337,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         ImGui::SameLine();
         if (ImGui::Button(" Nivel de un nodo "))
         {
+            console = "";
             auto nivel = Helper::getLevelByName(tree, addTitle);
             if (nivel != -1)
             {
                 console = "El nivel del nodo es : " + std::to_string(nivel);
+            }
+            else
+            {
+                console = "El nodo no se encuentra en el arbol.";
+            }
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button(" Balanceo "))
+        {
+            console = "";
+            auto balance = Helper::getBalanceByName(tree, addTitle);
+            if (balance != -1)
+            {
+                console = "El factor de balanceo del nodo es : " + std::to_string(balance);
+            }
+            else
+            {
+                console = "El nodo no se encuentra en el arbol.";
             }
         }
 
@@ -623,6 +379,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         {
             table.clear();
             table = Helper::searchWithCriteria(tree, std::stoi(year), std::stod(FE));
+            if (table.empty())
+            {
+                console = "No hay nodos que cumplan con esos criterios de busqueda.";
+            }
         }
 
         for (size_t i = 0; i < 25; i++)
@@ -657,7 +417,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         ImGui::End();
 
-        Render(imagen, change);
+        Render(imagen, change, imagenPaht);
 
         ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 
@@ -706,4 +466,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     glfwTerminate();
 
     return 0;
+}
+
+// Main code
+int main(int, char**)
+{
+    return principal();
+}
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+    return principal();
 }
