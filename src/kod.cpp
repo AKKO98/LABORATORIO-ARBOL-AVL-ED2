@@ -226,7 +226,7 @@ int principal() {
     std::vector<Pelicula> table;
     static std::string console;
 
-    prueba(tree);
+    //prueba(tree);
 
     // Main loop
     while (!glfwWindowShouldClose(window))
