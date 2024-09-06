@@ -20,6 +20,7 @@ private:
     AVLTreeNode<T> *root;
     
     void balance(std::vector<AVLTreeNode<T>**> path);
+    std::vector<AVLTreeNode<T>*> bfsRecursive(std::vector<AVLTreeNode<T>*>& result, std::queue<AVLTreeNode<T>*>& queue) const;
 
     
 public:
@@ -48,6 +49,8 @@ public:
 
     void display(const std::string& filename);
     std::vector<AVLTreeNode<T>*> bfs() const;
+
+    std::vector<AVLTreeNode<T>*> bfsRecursive() const;
 
 
 };

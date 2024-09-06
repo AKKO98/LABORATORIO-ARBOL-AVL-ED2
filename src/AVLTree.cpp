@@ -282,7 +282,6 @@ AVLTreeNode<T>* AVLTree<T>::operator[](std::size_t idx) {
 
 template <class T>
 void AVLTree<T>::display(const std::string& filename) {
-    // Obtener el vector BFS del árbol
     std::vector<AVLTreeNode<T>*> bfs_seq = bfs();
 
     if (bfs_seq.empty()) {
@@ -374,10 +373,42 @@ std::vector<AVLTreeNode<T>*> AVLTree<T>::bfs() const {
     return result;
 }
 
+template <class T>
+std::vector<AVLTreeNode<T>*> AVLTree<T>::bfsRecursive() const {
+    std::vector<AVLTreeNode<T>*> result;
+    std::queue<AVLTreeNode<T>*> queue;
+    queue.push(root);
+    return bfsRecursive(result, queue);
+}
+
+template <class T>
+std::vector<AVLTreeNode<T>*> AVLTree<T>::bfsRecursive(std::vector<AVLTreeNode<T>*>& result, std::queue<AVLTreeNode<T>*>& queue) const {
+    if (queue.empty())
+        return result;
+
+    AVLTreeNode<T>* node = queue.front();
+    queue.pop();
+    result.push_back(node);
+
+    if (node->left != nullptr) {
+        queue.push(node->left);
+    }
+    
+    
+        
+    if (node->right != nullptr) {
+        queue.push(node->right);
+    }
+    
+
+    bfsRecursive(result, queue);
+    return result;  
+}
 
 
 template class AVLTree<short>;
 template class AVLTree<long>;
 template class AVLTree<long long>;
+template class AVLTree<int>;
 template class AVLTree<std::string>;
 template class AVLTree<Pelicula>;

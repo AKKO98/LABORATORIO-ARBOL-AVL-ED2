@@ -17,6 +17,7 @@
 #include <GLFW/glfw3.h>
 
 #define IMGUI_DEFINE_MATH_OPERATOR
+//#define ENTEROS
 
 GLuint LoadTextureFromFile(const char* filename)
 {
@@ -139,7 +140,7 @@ void Render(bool& imagen, bool& imagenCambiada, std::string& path)
 
 void prueba(AVLTree<Pelicula>& p) {
     std::vector<std::string> ns = { "Mission to Mars",  "Final Destination", "The Family Man", "Space Cowboys", "Remember the Titans", "Big Momma's House",
-                                    "The Emperor's New Groove", "Autumn in New York", "Bring It On"
+                                    "The Emperor's New Groove", "Autumn in New York", "Bring It On", "The Beach", "Coyote Ugly", "Billy Elliot", "Romeo Must Die"
                                     };
     for (auto n : ns)
     {
@@ -225,7 +226,7 @@ int principal() {
     std::vector<Pelicula> table;
     static std::string console;
 
-
+    prueba(tree);
 
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -234,8 +235,8 @@ int principal() {
         glfwPollEvents();
         if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
         {
-            ImGui_ImplGlfw_Sleep(10);
-            continue;
+            //ImGui_ImplGlfw_Sleep(10);
+            //continue;
         }
 
         // Start the Dear ImGui frame
@@ -270,6 +271,21 @@ int principal() {
                 tree.display(imagenPaht);
                 change = true;
                 console = "Nodo eliminado con exito.";
+            }
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button(" Buscar Nodo "))
+        {
+            table.clear();
+            auto nodo = Helper::getNodeByName(tree, addTitle);
+            if (nodo != nullptr)
+            {
+                table.push_back(nodo->value);
+            }
+            else
+            {
+                console = "El nodo no se encuentra en el arbol";
             }
         }
 
@@ -323,7 +339,7 @@ int principal() {
         if (ImGui::Button("BFS"))
         {
             console = "";
-            auto l = tree.bfs();
+            auto l = tree.bfsRecursive();
             for (size_t i = 0; i < l.size(); i++)
             {
                 console = console + l[i]->value.getTitle();
@@ -375,6 +391,7 @@ int principal() {
         for (size_t i = 0; i < 5; i++)
             ImGui::Spacing();
 
+
         if (ImGui::Button(" Busqueda por atributos "))
         {
             table.clear();
@@ -389,6 +406,7 @@ int principal() {
             ImGui::Spacing();
 
 
+        ImGui::Text(" Informacion de los Nodos");
         // Tabla
         ImGui::BeginTable("Datos: ", 7, ImGuiTableFlags_BordersH | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInner);
         ImGui::TableNextColumn(); ImGui::Text("Year");
@@ -429,7 +447,11 @@ int principal() {
         strcpy_s(copia, console.size() + 1, console.c_str());
 
         // Mostrar la caja de texto de solo lectura
-        ImGui::InputTextMultiline(" ", copia, IM_ARRAYSIZE(copia), { ImGui::GetWindowWidth() * .98f, ImGui::GetWindowHeight() * .85f });
+        ImGui::PushTextWrapPos(ImGui::GetWindowWidth() * 0.98f);
+        ImGui::InputTextMultiline(" ", copia, IM_ARRAYSIZE(copia),
+            ImVec2(ImGui::GetWindowWidth() * 0.98f, ImGui::GetWindowHeight() * 0.85f),
+            ImGuiInputTextFlags_AllowTabInput);
+        ImGui::PopTextWrapPos();
         ImGui::End();
 
 
@@ -468,10 +490,33 @@ int principal() {
     return 0;
 }
 
+int enteros() {
+    std::filesystem::path directorioEjecutable = std::filesystem::current_path();
+    std::string imagenPaht = directorioEjecutable.string().append("\\Arbol.png");
+    AVLTree<int> arbol;
+
+    std::vector<int> numeros = {122, 130, 115, 7, 2, 9, 16, 29, 40, 28, 101, 24, 55, 65, 78, 83, 104, 105, 70, 90, 85, 95, 88, 93, 117, 147, 8, 5};
+
+    for (size_t i = 0; i < numeros.size(); i++)
+    {
+        arbol.insert(numeros[i]);
+        arbol.display(imagenPaht);
+        std::cout << "Numero insertado es: " << numeros[i] << std::endl;
+        std::cin.get();
+    }
+
+    return 0;
+}
+
 // Main code
 int main(int, char**)
 {
+#ifdef ENTEROS
+    return enteros();
+#else
     return principal();
+#endif // !ENTEROS
+    
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)

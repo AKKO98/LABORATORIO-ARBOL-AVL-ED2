@@ -176,6 +176,25 @@ struct Helper
         return -1; // Nodo no encontrado en el árbol
     }
 
+    static AVLTreeNode<Pelicula>* getNodeByName(AVLTree<Pelicula>& arbol, std::string name) {
+        AVLTreeNode<Pelicula>* current = arbol.getRoot();
+
+        while (current != nullptr) {
+            if (name < current->value.getTitle()) {
+                current = current->left;
+            }
+            else if (name > current->value.getTitle()) {
+                current = current->right;
+            }
+            else {
+                return current;
+            }
+            
+        }
+
+        return nullptr; // Nodo no encontrado en el árbol
+    }
+
 
     static int getBalanceByName(AVLTree<Pelicula>& arbol, std::string name) {
         int balance = 0;
