@@ -17,6 +17,7 @@
 #include <GLFW/glfw3.h>
 
 #define IMGUI_DEFINE_MATH_OPERATOR
+
 //#define ENTEROS
 
 GLuint LoadTextureFromFile(const char* filename)
@@ -394,11 +395,19 @@ int principal() {
 
         if (ImGui::Button(" Busqueda por atributos "))
         {
+            try
+            {
             table.clear();
             table = Helper::searchWithCriteria(tree, std::stoi(year), std::stod(FE));
+            
             if (table.empty())
             {
                 console = "No hay nodos que cumplan con esos criterios de busqueda.";
+            }
+            }
+            catch (const std::exception&)
+            {
+
             }
         }
 
@@ -496,12 +505,12 @@ int enteros() {
     AVLTree<int> arbol;
 
     std::vector<int> numeros = {122, 130, 115, 7, 2, 9, 16, 29, 40, 28, 101, 24, 55, 65, 78, 83, 104, 105, 70, 90, 85, 95, 88, 93, 117, 147, 8, 5};
-
-    for (size_t i = 0; i < numeros.size(); i++)
+    std::vector<int> numeros2 = { 7, 4, 13, 3, 2, 1, 0, 8, 17, 26, 45, 12, 75, 5, 20, 15, 11, 9 , 30, 36, 21, 87, 69, 63, 25};
+    for (size_t i = 0; i < numeros2.size(); i++)
     {
-        arbol.insert(numeros[i]);
+        arbol.insert(numeros2[i]);
         arbol.display(imagenPaht);
-        std::cout << "Numero insertado es: " << numeros[i] << std::endl;
+        std::cout << "Numero insertado es: " << numeros2[i] << std::endl;
         std::cin.get();
     }
 
